@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   DndContext,
   DragOverlay,
@@ -40,15 +40,39 @@ export const KanbanBoard = ({ user, onLogout }: KanbanBoardProps) => {
     })
   );
 
+  // One save in flight at a time, always sending the latest board, so rapid
+  // edits (e.g. typing a column name) cannot overwrite each other out of order.
+  const pendingSave = useRef<BoardData | null>(null);
+  const saving = useRef(false);
+
+  const queueSave = (next: BoardData) => {
+    pendingSave.current = next;
+    if (saving.current) {
+      return;
+    }
+    saving.current = true;
+    void (async () => {
+      while (pendingSave.current) {
+        const toSave = pendingSave.current;
+        pendingSave.current = null;
+        try {
+          await saveBoard(toSave);
+          setSaveFailed(false);
+        } catch {
+          setSaveFailed(true);
+        }
+      }
+      saving.current = false;
+    })();
+  };
+
   const applyChange = (updater: (prev: BoardData) => BoardData) => {
     if (!board) {
       return;
     }
     const next = updater(board);
     setBoard(next);
-    saveBoard(next)
-      .then(() => setSaveFailed(false))
-      .catch(() => setSaveFailed(true));
+    queueSave(next);
   };
 
   const handleDragStart = (event: DragStartEvent) => {

@@ -1,6 +1,7 @@
 import json
 import os
 import sqlite3
+from contextlib import closing
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -71,7 +72,9 @@ def connect() -> sqlite3.Connection:
 
 
 def init_db() -> None:
-    with connect() as conn:
+    # sqlite3's context manager only manages the transaction; closing()
+    # actually closes the connection.
+    with closing(connect()) as conn, conn:
         conn.execute(
             """CREATE TABLE IF NOT EXISTS users (
                 id INTEGER PRIMARY KEY,
@@ -100,7 +103,7 @@ def init_db() -> None:
 
 
 def get_board(username: str) -> dict:
-    with connect() as conn:
+    with closing(connect()) as conn:
         row = conn.execute(
             """SELECT boards.data FROM boards
                JOIN users ON users.id = boards.user_id
@@ -111,7 +114,7 @@ def get_board(username: str) -> dict:
 
 
 def save_board(username: str, board: dict) -> None:
-    with connect() as conn:
+    with closing(connect()) as conn, conn:
         conn.execute(
             """UPDATE boards SET data = ?, updated_at = ?
                WHERE user_id = (SELECT id FROM users WHERE username = ?)""",

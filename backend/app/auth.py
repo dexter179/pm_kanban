@@ -1,4 +1,5 @@
 import os
+import secrets
 from typing import Annotated
 
 from fastapi import HTTPException, Request
@@ -9,8 +10,10 @@ USERNAME = "user"
 PASSWORD = "password"
 COOKIE_NAME = "session"
 
+# Without SECRET_KEY, sessions are signed with a random per-process secret
+# and reset on restart.
 _serializer = URLSafeSerializer(
-    os.environ.get("SECRET_KEY", "dev-secret-change-me"), salt="session"
+    os.environ.get("SECRET_KEY") or secrets.token_hex(32), salt="session"
 )
 
 
