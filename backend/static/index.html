@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Project Management MVP</title>
+  <style>
+    body {
+      font-family: "Segoe UI", sans-serif;
+      background: #f7f8fb;
+      color: #032147;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      margin: 0;
+    }
+    .card {
+      background: #ffffff;
+      border-top: 4px solid #ecad0a;
+      border-radius: 12px;
+      box-shadow: 0 18px 40px rgba(3, 33, 71, 0.12);
+      padding: 2.5rem 3rem;
+      text-align: center;
+    }
+    h1 { margin: 0 0 0.5rem; }
+    p { color: #888888; }
+    #api-status { font-weight: 600; color: #209dd7; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Hello World</h1>
+    <p>Project Management MVP scaffolding is running.</p>
+    <p>API health: <span id="api-status">checking...</span></p>
+  </div>
+  <script>
+    fetch("/api/health")
+      .then((response) => response.json())
+      .then((data) => {
+        document.getElementById("api-status").textContent = data.status;
+      })
+      .catch(() => {
+        document.getElementById("api-status").textContent = "unreachable";
+      });
+  </script>
+</body>
+</html>

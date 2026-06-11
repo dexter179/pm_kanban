@@ -1,0 +1,14 @@
+services:
+  app:
+    build: .
+    container_name: pm-app
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    env_file:
+      - ../.env
+    volumes:
+      - pm-data:/app/data
+
+volumes:
+  pm-data:
